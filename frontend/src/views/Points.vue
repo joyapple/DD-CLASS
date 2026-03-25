@@ -155,10 +155,22 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="exchangeDialog" title="确认兑换" width="400px">
+    <el-dialog v-model="exchangeDialog" title="帮学生兑换" width="500px">
       <div class="exchange-confirm">
-        <p>确定要兑换 <strong>{{ selectedItem?.name }}</strong> 吗？</p>
-        <p>需要消耗 <el-tag type="warning">{{ selectedItem?.points_cost }}</el-tag> 积分</p>
+        <el-form :model="exchangeForm" label-width="100px">
+          <el-form-item label="选择学生" v-if="isTeacher">
+            <el-select v-model="exchangeForm.student_id" placeholder="请选择学生" filterable>
+              <el-option v-for="student in students" :key="student.id" :label="`${student.name} - ${student.class_name}`"
+                :value="student.id" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="兑换商品">
+            <el-tag type="warning" size="large">{{ selectedItem?.name }}</el-tag>
+          </el-form-item>
+          <el-form-item label="消耗积分">
+            <el-tag type="danger" size="large">{{ selectedItem?.points_cost }} 积分</el-tag>
+          </el-form-item>
+        </el-form>
       </div>
       <template #footer>
         <el-button @click="exchangeDialog = false">取消</el-button>
@@ -200,6 +212,7 @@ const addPointsDialog = ref(false)
 const addPointsForm = ref({ student_id: null, rule_id: null, points: 10, description: '' })
 const selectedItem = ref(null)
 const exchangeDialog = ref(false)
+const exchangeForm = ref({ student_id: null })
 
 const getCategoryText = (cat) => {
   const map = { attendance: '考勤', score: '成绩', behavior: '行为', homework: '作业', competition: '竞赛' }
@@ -298,15 +311,23 @@ const submitAddPoints = async () => {
 
 const exchangeItem = (item) => {
   selectedItem.value = item
+  exchangeForm.value = { student_id: null }
   exchangeDialog.value = true
 }
 
 const submitExchange = async () => {
+  if (isTeacher.value && !exchangeForm.value.student_id) {
+    ElMessage.warning('请选择学生')
+    return
+  }
   try {
-    await api.post('/points/exchange', { item_id: selectedItem.value.id })
+    const payload = { item_id: selectedItem.value.id }
+    if (isTeacher.value) {
+      payload.student_id = exchangeForm.value.student_id
+    }
+    await api.post('/points/exchange', payload)
     ElMessage.success('兑换成功！')
     exchangeDialog.value = false
-    fetchMyPoints()
     fetchExchanges()
     fetchStats()
   } catch (e) {
@@ -330,10 +351,7 @@ onMounted(() => {
   fetchRules()
   fetchItems()
   fetchExchanges()
-  if (isTeacher.value) {
-    fetchStudents()
-  }
-  activeTab.value = 'ranking'
+  fetchStudents()
 })
 </script>
 
@@ -348,5 +366,4 @@ onMounted(() => {
 .item-stock { color: #999; margin-bottom: 15px; }
 .exchange-btn { width: 100%; }
 .exchange-confirm { text-align: center; padding: 20px; }
-.exchange-confirm p { margin: 10px 0; font-size: 16px; }
 </style>

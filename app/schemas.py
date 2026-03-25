@@ -171,6 +171,7 @@ class ScoreResponse(ScoreBase):
     student_name: Optional[str] = None
     subject_name: Optional[str] = None
     class_name: Optional[str] = None
+    exam_date: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -197,6 +198,7 @@ class AttendanceResponse(AttendanceBase):
     id: int
     student_name: Optional[str] = None
     class_name: Optional[str] = None
+    date: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -368,6 +370,7 @@ class PointAddRequest(BaseModel):
 class PointExchangeRequest(BaseModel):
     item_id: int
     quantity: int = 1
+    student_id: Optional[int] = None
 
 class PointRankingResponse(BaseModel):
     student_id: int
@@ -382,3 +385,93 @@ class PointStatsResponse(BaseModel):
     total_points_distributed: int
     total_points_exchanged: int
     top_students: List[PointRankingResponse]
+
+class SystemSettingResponse(BaseModel):
+    id: int
+    setting_key: str
+    setting_value: Optional[str]
+    description: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class SystemSettingUpdate(BaseModel):
+    setting_value: str
+
+class SystemSettingsResponse(BaseModel):
+    system_name: str
+    login_background: str
+    system_logo: str
+    system_intro: str
+    copyright: str
+    use_bing_background: bool
+
+
+class HomeworkBase(BaseModel):
+    title: str
+    content: Optional[str] = None
+    class_id: int
+    subject_id: Optional[int] = None
+    due_date: Optional[datetime] = None
+
+class HomeworkCreate(HomeworkBase):
+    pass
+
+class HomeworkUpdate(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+    subject_id: Optional[int] = None
+    due_date: Optional[datetime] = None
+
+class HomeworkResponse(HomeworkBase):
+    id: int
+    created_by: int
+    created_at: datetime
+    updated_at: datetime
+    class_name: Optional[str] = None
+    subject_name: Optional[str] = None
+    creator_name: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+class HomeworkListResponse(BaseModel):
+    total: int
+    data: List[HomeworkResponse]
+
+
+class NotificationBase(BaseModel):
+    title: str
+    content: Optional[str] = None
+    priority: str = "normal"
+    is_pinned: bool = False
+    class_id: Optional[int] = None
+
+class NotificationCreate(NotificationBase):
+    pass
+
+class NotificationUpdate(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+    priority: Optional[str] = None
+    is_pinned: Optional[bool] = None
+    class_id: Optional[int] = None
+
+class NotificationResponse(NotificationBase):
+    id: int
+    created_by: int
+    created_at: datetime
+    updated_at: datetime
+    creator_name: Optional[str] = None
+    class_name: Optional[str] = None
+    is_read: Optional[bool] = False
+
+    class Config:
+        from_attributes = True
+
+class NotificationListResponse(BaseModel):
+    total: int
+    unread_count: int
+    data: List[NotificationResponse]

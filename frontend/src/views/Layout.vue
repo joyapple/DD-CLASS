@@ -7,9 +7,12 @@
     >
       <div class="logo" :class="{ 'logo-collapsed': isCollapsed }">
         <div class="logo-content">
-          <el-icon class="logo-icon" :size="24"><School /></el-icon>
+          <div class="logo-icon-wrapper" v-if="userStore.systemSettings?.system_logo && !isCollapsed">
+            <img :src="userStore.systemSettings.system_logo" alt="Logo" class="header-logo" />
+          </div>
+          <el-icon v-else class="logo-icon" :size="24"><School /></el-icon>
           <transition name="fade-slide">
-            <h2 v-if="!isCollapsed" class="logo-text">班级管理</h2>
+            <h2 v-if="!isCollapsed" class="logo-text">{{ userStore.systemSettings?.system_name || '班级管理' }}</h2>
           </transition>
         </div>
         <el-button
@@ -78,6 +81,18 @@
           <el-icon><Coin /></el-icon>
           <template #title>积分系统</template>
         </el-menu-item>
+        <el-menu-item index="/homework">
+          <el-icon><Document /></el-icon>
+          <template #title>作业管理</template>
+        </el-menu-item>
+        <el-menu-item index="/notifications">
+          <el-icon><Bell /></el-icon>
+          <template #title>通知中心</template>
+        </el-menu-item>
+        <el-menu-item index="/settings" v-if="userStore.isAdmin">
+          <el-icon><Setting /></el-icon>
+          <template #title>系统设置</template>
+        </el-menu-item>
       </el-menu>
 
       <div class="sidebar-footer" v-if="!isCollapsed">
@@ -94,6 +109,18 @@
           </el-breadcrumb>
         </div>
         <div class="header-right">
+          <div class="social-links">
+            <a href="https://github.com/joyapple/DD-CLASS" target="_blank" class="social-link" title="GitHub">
+              <svg height="20" width="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+              </svg>
+            </a>
+            <a href="https://gitee.com/joyapple2020/dd-class" target="_blank" class="social-link" title="Gitee">
+              <svg height="20" width="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M10.123 10.354l-.696-.696c-.82-.82-2.153-.82-2.973 0l-.696.696c-.82.82-.82 2.153 0 2.973l.696.696c.82.82 2.153.82 2.973 0l.696-.696c.82-.82.82-2.153 0-2.973zm9.877 1.323c-.41-.409-1.077-.409-1.487 0l-.41.41c-.82.82-.82 2.153 0 2.973l3.374 3.374c.41.409 1.077.409 1.487 0l.41-.41c.82-.82.82-2.153 0-2.973l-3.374-3.374zM3.205 13.165l-1.415 1.414c-.41.409-.41 1.077 0 1.487l4.243 4.243c.409.409 1.077.409 1.487 0l1.414-1.414-5.729-5.73z"/>
+              </svg>
+            </a>
+          </div>
           <el-dropdown @command="handleCommand">
             <div class="user-info">
               <el-avatar :size="32" class="user-avatar">
@@ -160,7 +187,8 @@ import {
   Coin,
   Expand,
   Fold,
-  Setting
+  Setting,
+  Bell
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -389,6 +417,36 @@ const handleLogout = () => {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+.social-links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-right: 16px;
+  border-right: 1px solid #e4e7ed;
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: #606266;
+  transition: all 0.3s ease;
+}
+
+.social-link:hover {
+  color: #409eff;
+  background: #f0f9ff;
+  transform: translateY(-2px);
+}
+
+.social-link svg {
+  width: 18px;
+  height: 18px;
 }
 
 .user-info {

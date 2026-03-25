@@ -84,6 +84,22 @@ const routes = [
         path: 'points-display',
         name: 'PointsDisplay',
         component: () => import('@/views/PointsDisplay.vue')
+      },
+      {
+        path: 'settings',
+        name: 'Settings',
+        component: () => import('@/views/Settings.vue'),
+        meta: { requiresAdmin: true }
+      },
+      {
+        path: 'homework',
+        name: 'Homework',
+        component: () => import('@/views/Homework.vue')
+      },
+      {
+        path: 'notifications',
+        name: 'Notifications',
+        component: () => import('@/views/Notifications.vue')
       }
     ]
   }

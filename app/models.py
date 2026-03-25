@@ -216,3 +216,66 @@ class PointExchange(Base):
     student = relationship("Student", backref="exchanges")
     item = relationship("PointItem", backref="exchanges")
     operator = relationship("User", backref="exchange_operations")
+
+
+class SystemSetting(Base):
+    """系统设置"""
+    __tablename__ = "system_settings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    setting_key = Column(String, unique=True, nullable=False, index=True)
+    setting_value = Column(String, nullable=True)
+    description = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
+class Homework(Base):
+    """作业"""
+    __tablename__ = "homeworks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    content = Column(String, nullable=True)
+    class_id = Column(Integer, ForeignKey("classes.id"), nullable=False)
+    subject_id = Column(Integer, ForeignKey("subjects.id"), nullable=True)
+    due_date = Column(DateTime(timezone=True), nullable=True)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    class_obj = relationship("Class", backref="homeworks")
+    subject = relationship("Subject", backref="homeworks")
+    creator = relationship("User", backref="homeworks")
+
+
+class Notification(Base):
+    """通知"""
+    __tablename__ = "notifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    content = Column(String, nullable=True)
+    priority = Column(String, default="normal")
+    is_pinned = Column(Boolean, default=False)
+    class_id = Column(Integer, ForeignKey("classes.id"), nullable=True)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    creator = relationship("User", backref="notifications")
+    class_obj = relationship("Class", backref="notifications")
+
+
+class NotificationRead(Base):
+    """通知阅读记录"""
+    __tablename__ = "notification_reads"
+
+    id = Column(Integer, primary_key=True, index=True)
+    notification_id = Column(Integer, ForeignKey("notifications.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    is_read = Column(Boolean, default=False)
+    read_at = Column(DateTime(timezone=True), nullable=True)
+
+    notification = relationship("Notification", backref="read_records")
+    user = relationship("User", backref="notification_reads")

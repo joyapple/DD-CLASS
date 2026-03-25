@@ -326,12 +326,25 @@ def exchange_item(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    if is_admin(current_user) or is_class_teacher(current_user):
-        raise HTTPException(status_code=400, detail="教师账号不能兑换商品")
-
-    student = db.query(Student).filter(Student.teacher_id == current_user.id).first()
-    if not student:
-        raise HTTPException(status_code=404, detail="未找到对应的学生账号")
+    student_id = None
+    
+    if is_teacher(current_user):
+        if not data.student_id:
+            raise HTTPException(status_code=400, detail="教师帮学生兑换时需要提供student_id")
+        student_id = data.student_id
+        
+        student = db.query(Student).filter(Student.id == student_id).first()
+        if not student:
+            raise HTTPException(status_code=404, detail="学生不存在")
+            
+        accessible_class_ids = get_accessible_class_ids(current_user, db)
+        if student.class_id not in accessible_class_ids:
+            raise HTTPException(status_code=403, detail="无权为该学生兑换")
+    else:
+        student = db.query(Student).filter(Student.teacher_id == current_user.id).first()
+        if not student:
+            raise HTTPException(status_code=404, detail="未找到对应的学生账号")
+        student_id = student.id
 
     item = db.query(PointItem).filter(PointItem.id == data.item_id, PointItem.is_active == True).first()
     if not item:
@@ -340,9 +353,12 @@ def exchange_item(
     if item.stock != -1 and item.stock < data.quantity:
         raise HTTPException(status_code=400, detail="库存不足")
 
-    sp = db.query(StudentPoint).filter(StudentPoint.student_id == student.id).first()
+    sp = db.query(StudentPoint).filter(StudentPoint.student_id == student_id).first()
     if not sp:
-        raise HTTPException(status_code=400, detail="积分账户不存在")
+        sp = StudentPoint(student_id=student_id, total_points=0, available_points=0, total_earned=0, total_spent=0)
+        db.add(sp)
+        db.commit()
+        db.refresh(sp)
 
     total_cost = item.points_cost * data.quantity
     if sp.available_points < total_cost:
@@ -355,7 +371,7 @@ def exchange_item(
         item.stock -= data.quantity
 
     exchange = PointExchange(
-        student_id=student.id,
+        student_id=student_id,
         item_id=data.item_id,
         points_spent=total_cost,
         quantity=data.quantity,
@@ -365,7 +381,7 @@ def exchange_item(
     db.add(exchange)
 
     record = PointRecord(
-        student_id=student.id,
+        student_id=student_id,
         points=-total_cost,
         balance_after=sp.available_points,
         source_type="exchange",
@@ -388,17 +404,14 @@ def get_exchanges(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    if is_admin(current_user):
-        query = db.query(PointExchange)
-        if status:
-            query = query.filter(PointExchange.status == status)
-        if student_id:
-            query = query.filter(PointExchange.student_id == student_id)
-    else:
-        student = db.query(Student).filter(Student.teacher_id == current_user.id).first()
-        if not student:
-            raise HTTPException(status_code=404, detail="未找到对应的学生账号")
-        query = db.query(PointExchange).filter(PointExchange.student_id == student.id)
+    accessible_class_ids = get_accessible_class_ids(current_user, db)
+    accessible_student_ids = [s.id for s in db.query(Student).filter(Student.class_id.in_(accessible_class_ids)).all()]
+    
+    query = db.query(PointExchange).filter(PointExchange.student_id.in_(accessible_student_ids))
+    if status:
+        query = query.filter(PointExchange.status == status)
+    if student_id and student_id in accessible_student_ids:
+        query = query.filter(PointExchange.student_id == student_id)
 
     total = query.count()
     exchanges = query.order_by(desc(PointExchange.exchange_time)).offset((page-1)*page_size).limit(page_size).all()
