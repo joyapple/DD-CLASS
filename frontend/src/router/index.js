@@ -49,7 +49,7 @@ const routes = [
       {
         path: 'analysis',
         name: 'Analysis',
-        component: () => import('@/views/Analysis.vue')
+        component: () => import('@/views/ScoreAnalysis.vue')
       },
       {
         path: 'users',

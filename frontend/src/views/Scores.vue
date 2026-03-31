@@ -282,11 +282,14 @@
 
 <script setup>
 import { ref, reactive, onMounted, nextTick, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, UploadFilled, Upload, DataAnalysis, Download } from '@element-plus/icons-vue'
 import api from '@/api'
 import * as XLSX from 'xlsx'
 import * as echarts from 'echarts'
+
+const router = useRouter()
 
 const scores = ref([])
 const classes = ref([])
@@ -409,34 +412,8 @@ const calculateStatistics = () => {
   scoreDistribution.fail = scores_list.filter(s => s < 60).length
 }
 
-const handleOpenAnalysis = async () => {
-  try {
-    loading.value = true
-    
-    const data = await api.scores.list({
-      class_id: filterClassId.value || undefined,
-      semester: filterSemester.value || undefined,
-      page: 1,
-      page_size: 1000
-    })
-    
-    const allScores = (data?.data || []).map(s => ({
-      ...s,
-      student_name: s.student_name || students.value.find(st => st.id === s.student_id)?.name || '',
-      subject_name: s.subject_name || subjects.value.find(sub => sub.id === s.subject_id)?.name || ''
-    }))
-    
-    scores.value = allScores
-    calculateStatistics()
-    calculateStudentRanking()
-    
-    showAnalysisDialog.value = true
-  } catch (e) {
-    console.error('加载成绩数据失败:', e)
-    ElMessage.error('加载成绩数据失败')
-  } finally {
-    loading.value = false
-  }
+const handleOpenAnalysis = () => {
+  router.push('/analysis')
 }
 
 const handleExportScores = async () => {

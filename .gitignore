@@ -53,7 +53,13 @@ parent-portal/.vite/
 
 # Temp Files
 *.pyc
+*.py.bak
+migrate_*.py
+fix_*.py
 create_*.py
 add_*.py
-test_*.py
+check_*.py
+update_*.py
+init_*.py
 temp_*.py
+test_*.py

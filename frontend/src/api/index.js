@@ -104,5 +104,10 @@ export default {
     getSubjectRankings: (subjectId, params) => api.get(`/dashboard/rankings/subjects/${subjectId}`, { params }),
     getTrends: (params) => api.get('/dashboard/analysis/trends', { params }),
     getSubjectAnalysis: (params) => api.get('/dashboard/analysis/subjects', { params })
+  },
+  analytics: {
+    getStudentAnalysis: (studentId, params) => api.get(`/analytics/student/${studentId}`, { params }),
+    getClassAnalysis: (classId, params) => api.get(`/analytics/class/${classId}`, { params }),
+    getComparison: (classId, params) => api.get('/analytics/comparison', { params })
   }
 }

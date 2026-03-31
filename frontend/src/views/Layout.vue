@@ -58,8 +58,8 @@
           <template #title>班级排名</template>
         </el-menu-item>
         <el-menu-item index="/analysis">
-          <el-icon><PieChart /></el-icon>
-          <template #title>数据分析</template>
+          <el-icon><TrendCharts /></el-icon>
+          <template #title>成绩分析</template>
         </el-menu-item>
         <el-menu-item index="/users" v-if="userStore.isAdmin">
           <el-icon><UserFilled /></el-icon>

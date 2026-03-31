@@ -93,6 +93,7 @@
 - ✅ 按学期、班级、学生筛选成绩
 - ✅ 批量导入成绩（支持Excel格式）
 - ✅ 成绩统计与分析
+- ✅ **成绩分析**：个人/班级成绩趋势、薄弱科目分析、分数段分布
 
 ### 5. 考勤管理
 - ✅ 日常考勤记录（出勤、缺勤、迟到、请假）
@@ -436,6 +437,7 @@ DD-CLASS/
 │   │   ├── homework.py           # 作业管理API
 │   │   ├── notifications.py     # 通知中心API
 │   │   ├── parent.py             # 家长端口API
+│   │   ├── analytics.py          # 成绩分析API
 │   │   └── settings.py          # 系统设置API
 │   ├── models.py                # 数据库模型
 │   ├── schemas.py               # Pydantic模型
@@ -600,6 +602,16 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 **解决**:
 - 确认当前用户是管理员、班主任或任课教师
 - 确认学生所在的班级在当前教师的权限范围内
+
+### 7. 登录失败
+
+**问题**: 登录时提示"请求失败"或500错误
+
+**解决**:
+- 重新安装bcrypt兼容版本：
+```bash
+pip install bcrypt==4.0.1
+```
 
 ## 📄 使用许可
 
